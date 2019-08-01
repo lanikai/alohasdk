@@ -1,0 +1,14 @@
+{
+  "name": "alohasdk",
+  "version": "0.1.0",
+  "description": "Browser SDK for calling AlohaRTC.",
+  "main": "call.js",
+  "keywords": [
+    "alohartc"
+  ],
+  "author": "Lanikai Labs, LLC",
+  "license": "ISC",
+  "dependencies": {
+    "webrtc-adapter": "^7.2.8"
+  }
+}

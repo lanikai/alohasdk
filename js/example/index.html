@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AlohaSDK JS Example Page</title>
+</head>
+<body>
+  <form id="form">
+    <label>Device ID: <input type="text" name="deviceId" /></label>
+    <label>Auth token: <input type="text" name="authToken" /></label>
+    <input type="submit" value="Start call" />
+  </form>
+  <video id="remoteVideo" autoplay controls muted playsinline></video>
+
+  <!-- require-stub provides a hacky implementation of require() that runs
+    directly in the browser. Do not use this in production. -->
+  <script src="/node_modules/require-stub/index.js"></script>
+
+  <script>
+    const alohasdk = require('alohasdk');
+
+    const form = document.getElementById('form');
+    const remoteVideo = document.getElementById('remoteVideo');
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+      var pc = alohasdk.Call({
+        deviceId: form.elements.deviceId.value,
+        authToken: form.elements.authToken.value,
+        remoteVideo: remoteVideo,
+      });
+    };
+  </script>
+
+</body>
+</html>
