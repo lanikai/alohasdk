@@ -8,18 +8,18 @@ var defaultIceServers = [
   },
 ];
 
-// Start a WebRTC call to a remote device. Returns an RTCPeerConnection object,
-// which should be close()'d when the call is terminated.
+// Start a WebRTC call to a remote device. Takes a dictionary of options.
+// Returns an RTCPeerConnection object, which should be close()'d when the call
+// is terminated.
 //
-// Takes a dictionary of options:
+// Required options:
 //   deviceId: Which device to connect to.
-//   authToken: Authentication token.
+//   authToken: Authentication token provided by Oahu backend.
 //   remoteVideo: <video> element where remote video should be displayed.
-//
-// Additional debug options:
-//   signalServer: Signaling server domain. Default 'oahu.lanikailabs.com'.
-//   iceServers: STUN/TURN servers to use when negotiating peer connection.
-//   log: Debug logging function. Defaults to window.console.log.
+// Additional options:
+//   signalServer: Signaling server URL (default 'wss://api.oahu.lanikailabs.com').
+//   iceServers: STUN/TURN servers to use for ICE (default STUN only).
+//   log: Debug logging function (default window.console.log).
 function Call(opts) {
   if (!opts) {
     throw "no options supplied";
@@ -30,8 +30,8 @@ function Call(opts) {
   var log = opts.log || console.log;
 
   // Initialize WebSocket connection to signaling server.
-  var signalServer = opts.signalServer || 'oahu.lanikailabs.com';
-  var url = 'wss://' + signalServer + '/devices/' + opts.deviceId + '/call';
+  var signalServer = opts.signalServer || 'wss://api.oahu.lanikailabs.com';
+  var url = signalServer + '/devices/' + opts.deviceId + '/call';
   var ws = new WebSocket(url);
 
   // Initialize RTCPeerConnection object.
