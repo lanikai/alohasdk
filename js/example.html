@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>alohasdk.js Example</title>
+  <style>
+    body {
+      max-width: 640px;
+      margin: auto;
+      padding: 10px;
+    }
+    form {
+      display: grid;
+      grid-template-columns: 25% 50%;
+      grid-gap: 5px;
+      margin: 10px;
+      line-height: 2em;
+    }
+    form label {
+      text-align: right;
+    }
+    video {
+      width: 100%;
+      border: 1px solid gray;
+    }
+    .hide {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <p>This page gives a minimal example of how to use <code>alohasdk.js</code> to
+  display live video streams in the browser. Just provide the ID of an
+  AlohaRTC-enabled device, along with an appropriate auth token.
+  <code>alohasdk.js</code> takes care of signaling, and establishes a WebRTC
+  peer connection directly to the device.</p>
+
+  <form id="form">
+    <label>Device ID:</label>
+    <input type="text" name="deviceId" />
+
+    <label>Auth token:</label>
+    <input type="text" name="authToken" />
+
+    <label class="advanced hide">Signal server:</label>
+    <input class="advanced hide" type="text" name="signalServer" value="wss://api.oahu.lanikailabs.com" />
+
+    <label class="advanced hide">ICE servers:</label>
+    <textarea class="advanced hide" name="iceServers"></textarea>
+
+    <label id="rainbow">🌈</label>
+    <input type="submit" value="Connect" />
+  </form>
+
+  <video id="remoteVideo" autoplay controls muted playsinline></video>
+
+  <!-- The WebRTC adapter helps smooth out differences between browsers. -->
+  <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
+
+  <script type="module">
+    // alohasdk.js uses ES6 syntax, which works natively on most modern browsers
+    //(see https://caniuse.com/#feat=es6). If you must support older browsers,
+    // we recommend using an ES6 transpiler (e.g. https://babeljs.io/) as part
+    // of your JS build process.
+
+    import * as alohasdk from './index.js';
+
+    const form = document.getElementById('form');
+    const remoteVideo = document.getElementById('remoteVideo');
+
+    form.onsubmit = function(e) {
+      e.preventDefault();
+
+      // alohasdk.Call returns a RTCPeerConnection object.
+      let pc = alohasdk.Call({
+        deviceId: form.elements.deviceId.value,
+        authToken: form.elements.authToken.value,
+        signalServer: form.elements.signalServer.value,
+        iceServers: JSON.parse(form.elements.iceServers.value || null),
+        remoteVideo: remoteVideo,
+      });
+    };
+
+    // Click the rainbow to show advanced options.
+    const rainbow = document.getElementById('rainbow');
+    rainbow.onclick = function(e) {
+      for (const el of document.getElementsByClassName('advanced')) {
+        el.classList.toggle('hide');
+      }
+    };
+  </script>
+</body>
+</html>

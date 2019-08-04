@@ -1,14 +1,28 @@
 {
-  "name": "alohasdk",
+  "name": "@lanikai/alohasdk.js",
   "version": "0.1.0",
-  "description": "Browser SDK for calling AlohaRTC.",
-  "main": "call.js",
+  "description": "Client library for connecting to AlohaRTC devices.",
+  "author": {
+    "name": "Lanikai Labs, LLC",
+    "email": "aloha@lanikailabs.com",
+    "url": "https://www.lanikailabs.com/"
+  },
+  "contributors": [
+    "Jordan Carlson <jordan@lanikailabs.com>"
+  ],
   "keywords": [
     "alohartc"
   ],
-  "author": "Lanikai Labs, LLC",
   "license": "ISC",
+  "main": "index.js",
+  "scripts": {
+    "example": "live-server --port=8081 --entry-file=example.html",
+    "test": "exit 0"
+  },
   "dependencies": {
     "webrtc-adapter": "^7.2.8"
+  },
+  "devDependencies": {
+    "live-server": "^1.2.1"
   }
 }

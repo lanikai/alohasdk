@@ -1,13 +1,3 @@
-"use strict";
-
-require('webrtc-adapter');
-
-var defaultIceServers = [
-  {
-    urls: ['stun:stun.l.google.com:19302']
-  },
-];
-
 // Start a WebRTC call to a remote device. Takes a dictionary of options.
 // Returns an RTCPeerConnection object, which should be close()'d when the call
 // is terminated.
@@ -20,7 +10,7 @@ var defaultIceServers = [
 //   signalServer: Signaling server URL (default 'wss://api.oahu.lanikailabs.com').
 //   iceServers: STUN/TURN servers to use for ICE (default STUN only).
 //   log: Debug logging function (default window.console.log).
-function Call(opts) {
+export function Call(opts) {
   if (!opts) {
     throw "no options supplied";
   }
@@ -82,7 +72,7 @@ function Call(opts) {
 
     // Create WebRTC offer and send it to the remote peer.
     pc.createOffer({ offerToReceiveAudio: false, offerToReceiveVideo: true })
-      .then(offer => {
+      .then(function(offer) {
         log("createOffer success:\n%s", offer.sdp);
         pc.setLocalDescription(offer);
         sendMessage(ws, 'sdp-offer', offer.sdp);
@@ -162,4 +152,8 @@ function sendMessage(ws, what, body) {
   ws.send(what + '\n' + body);
 };
 
-module.exports.Call = Call;
+var defaultIceServers = [
+  {
+    urls: ['stun:stun.l.google.com:19302']
+  },
+];
