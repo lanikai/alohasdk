@@ -98,17 +98,23 @@ export function Call(opts) {
         break;
       case 'ice-candidate':
         var c = {};
-        var lines = msg.body.split('\n');
-        for (var i = 0; i < lines.length; i++) {
-          var line = lines[i];
-          if (!line) {
-            continue;
-          } else if (line.startsWith('candidate:')) {
-            c.candidate = line;
-          } else if (line.startsWith('mid:')) {
-            c.sdpMid = line.slice(4);
-          } else {
-            log("Unrecognized 'ice-candidate' line:", line);
+        // The body is either a JSON object (new format) or a newline-delimited
+        // set of fields (old format).
+        if (msg.body.startsWith('{')) {
+          c = JSON.parse(msg.body);
+        } else {
+          var lines = msg.body.split('\n');
+          for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            if (!line) {
+              continue;
+            } else if (line.startsWith('candidate:')) {
+              c.candidate = line;
+            } else if (line.startsWith('mid:')) {
+              c.sdpMid = line.slice(4);
+            } else {
+              log("Unrecognized 'ice-candidate' line:", line);
+            }
           }
         }
         if (c.candidate) {
@@ -139,11 +145,11 @@ export function Call(opts) {
 // Split the given string into its first line (without the newline character)
 // plus the remainder. E.g. 'abc\ndef\ng' => {what: 'abc', body: 'def\ng'}
 function parseMessage(s) {
-  let i = s.indexOf('\n');
+  var i = s.indexOf('\n');
   if (i < 0) {
-    return {what: s, body: ''}
+    return {what: s, body: ''};
   } else {
-    return {what: s.slice(0, i), body: s.slice(i+1)}
+    return {what: s.slice(0, i), body: s.slice(i+1)};
   }
 }
 
