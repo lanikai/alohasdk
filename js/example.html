@@ -48,6 +48,9 @@
     <label class="advanced hide">ICE servers:</label>
     <textarea class="advanced hide" name="iceServers"></textarea>
 
+    <label>Status:</label>
+    <div id="status"></div>
+
     <label id="rainbow">🌈</label>
     <input type="submit" value="Connect" />
   </form>
@@ -58,16 +61,52 @@
   <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
 
   <script type="module">
-    // alohasdk.js uses ES6 syntax, which works natively on most modern browsers
-    //(see https://caniuse.com/#feat=es6). If you must support older browsers,
-    // we recommend using an ES6 transpiler (e.g. https://babeljs.io/) as part
-    // of your JS build process.
+    // This example uses ES6 syntax, which works natively on most modern
+    // browsers (see https://caniuse.com/#feat=es6). However, alohasdk.js itself
+    // does not require ES6.
 
     import * as alohasdk from './index.js';
 
     const form = document.getElementById('form');
+    const status = document.getElementById('status');
     const remoteVideo = document.getElementById('remoteVideo');
 
+    // Connect to the AlohaRTC platform to monitor device status.
+    let statusConn = null;
+    function doMonitor() {
+      if (!form.elements.deviceId.value) {
+        status.innerHTML = "";
+      } else if (!form.elements.authToken.value) {
+        status.innerHTML = "Not authenticated";
+      } else {
+        if (statusConn) {
+          // Close previous WebSocket connection.
+          statusConn.close();
+        }
+        statusConn = alohasdk.Monitor({
+          deviceId: form.elements.deviceId.value,
+          authToken: form.elements.authToken.value,
+          server: form.elements.signalServer.value,
+          onStatus: function(e) {
+            console.log("Status update:", e);
+            status.innerHTML = e.online
+              ? '<span style="color:green;">Online</span>'
+              : '<span style="color:red;">Offline</span>';
+            if (e.since) {
+              status.innerHTML += " since " + e.since.toLocaleString();
+            }
+          },
+        });
+      }
+    }
+
+    // Try to establish monitoring WebSocket when the page loads, and every
+    // time one of the form inputs change.
+    window.onload = doMonitor;
+    form.elements.deviceId.oninput = doMonitor;
+    form.elements.authToken.oninput = doMonitor;
+
+    // When the Connect button is clicked, start playing video from the device.
     form.onsubmit = function(e) {
       e.preventDefault();
 

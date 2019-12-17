@@ -3,6 +3,7 @@
 `alohasdk.js` is a client library for viewing AlohaRTC video streams directly in
 the browser.
 
+
 ## Getting started
 
 `alohasdk.js` is distributed as an NPM module. Add it to your project with:
@@ -30,6 +31,7 @@ stream will start playing in the provided `<video>` element.
 Note: The source code uses ES6 module syntax, which (as of 2019) is supported
 natively in most mainstream browsers. If you need to support older browser
 versions, you can use [Babel](https://babeljs.io/) to transpile to older syntax.
+
 
 ## Example
 

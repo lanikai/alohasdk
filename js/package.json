@@ -1,6 +1,6 @@
 {
   "name": "@lanikai/alohasdk.js",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Client library for connecting to AlohaRTC devices.",
   "author": {
     "name": "Lanikai Labs, LLC",
