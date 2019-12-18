@@ -1,7 +1,7 @@
 {
   "name": "@lanikai/alohasdk.js",
   "version": "0.2.0",
-  "description": "Client library for connecting to AlohaRTC devices.",
+  "description": "JavaScript client SDK library for the AlohaRTC platform.",
   "author": {
     "name": "Lanikai Labs, LLC",
     "email": "aloha@lanikailabs.com",
@@ -14,15 +14,23 @@
     "alohartc"
   ],
   "license": "ISC",
-  "main": "index.js",
+  "main": "dist/alohasdk.js",
+  "module": "src/index.js",
   "scripts": {
+    "build": "webpack",
     "example": "live-server --port=8081 --entry-file=example.html",
     "test": "exit 0"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "dependencies": {
-    "webrtc-adapter": "^7.2.8"
+    "webrtc-adapter": "^7.3.0"
   },
   "devDependencies": {
-    "live-server": "^1.2.1"
+    "live-server": "^1.2.1",
+    "webpack": "^4.41.3",
+    "webpack-cli": "^3.3.10"
   }
 }

@@ -60,12 +60,20 @@
   <!-- The WebRTC adapter helps smooth out differences between browsers. -->
   <script src="https://webrtchacks.github.io/adapter/adapter-latest.js"></script>
 
-  <script type="module">
-    // This example uses ES6 syntax, which works natively on most modern
-    // browsers (see https://caniuse.com/#feat=es6). However, alohasdk.js itself
-    // does not require ES6.
+  <!-- Here we load alohasdk.js from the locally-built file, which exposes the
+    global variable `alohasdk`. In production, you would instead load from CDN
+    (src="https://unpkg.com/@lanikai/alohasdk.js"), or bundle alohasdk.js into
+    your web app by installing the NPM package and using
+      import * as alohasdk from '@lanikai/alohasdk.js';
+    or
+      var alohasdk = require('@lanikai/alohasdk.js');
+  -->
+  <script src="./dist/alohasdk.js"></script>
 
-    import * as alohasdk from './index.js';
+  <script>
+    // This example uses ES2015 syntax, which works natively on most modern
+    // browsers (see https://caniuse.com/#feat=es6). However, alohasdk.js
+    // itself does not require ES2015.
 
     const form = document.getElementById('form');
     const status = document.getElementById('status');

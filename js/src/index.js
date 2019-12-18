@@ -1,13 +1,13 @@
-// Start a WebRTC call to a remote device. Takes a dictionary of options.
-// Returns an RTCPeerConnection object, which should be close()'d when the call
-// is terminated.
+// Start a WebRTC call to a remote device. Takes an options object (see below).
+//
+// Returns an RTCPeerConnection instance, which should be close()'d when the
+// call is terminated.
 //
 // Options:
 //   authToken: Client authentication token. (Required)
 //   deviceId: Which device to connect to. (Required)
-//   remoteVideo: <video> element for remove video stream. (Required)
-//   signalServer: Signaling server URL (default 'wss://api.oahu.lanikailabs.com').
-//   iceServers: STUN/TURN servers to use for ICE (default STUN only).
+//   remoteVideo: <video> element for displaying remote video stream. (Required)
+//   iceServers: STUN/TURN servers to use for ICE (defaults to STUN only).
 //   log: Debug logging function (default window.console.log).
 export function Call(opts) {
   if (!opts) {
@@ -64,9 +64,9 @@ export function Call(opts) {
   };
 
   ws.onopen = function() {
-    log("WebSocket opened");
+    log("WebSocket opened:", url);
 
-    // Authenticate by sending the user's auth token. This must be the very
+    // Authenticate by sending the client auth token. This must be the very
     // first message on the WebSocket.
     sendMessage(ws, 'auth-token', opts.authToken);
 
@@ -136,22 +136,23 @@ export function Call(opts) {
   };
 
   ws.onclose = function(e) {
-    log("WebSocket closed:", e.code, e.reason);
+    log("WebSocket closed:", url, e.code, e.reason);
   };
 
   return pc;
 }
 
-// Monitor for status updates from devices. Takes a dictionary of options, one
-// of which is a callback function that will be invoked on every status update.
+// Monitor for status updates from devices. Takes an options object. The
+// onStatus option is a callback function that will be invoked on every status
+// update.
+//
 // Returns a connected WebSocket object, which the caller may close() to stop
-// listening for updates.
+// receiving updates.
 //
 // Options:
 //   authToken: Client authentication token. (Required)
 //   onStatus: Callback function, taking a DeviceStatusEvent. (Required)
 //   deviceId or groupName: Device ID or group name to listen to. (Required)
-//   server: Backend server address (default 'https://api.oahu.lanikailabs.com').
 //   log: Debug logging function (default window.console.log).
 export function Monitor(opts) {
   if (!opts) {
@@ -181,13 +182,13 @@ export function Monitor(opts) {
   ws.onopen = function() {
     log("WebSocket opened:", url);
 
-    // Authenticate by sending the user's auth token. This must be the very
+    // Authenticate by sending the client auth token. This must be the very
     // first message on the WebSocket.
     sendMessage(ws, 'auth-token', opts.authToken);
   };
 
-  ws.onclose = function() {
-    log("WebSocket closed:", url);
+  ws.onclose = function(e) {
+    log("WebSocket closed:", url, e.code, e.reason);
   };
 
   ws.onmessage = function(e) {
