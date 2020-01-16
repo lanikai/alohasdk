@@ -118,13 +118,15 @@
     form.onsubmit = function(e) {
       e.preventDefault();
 
-      // alohasdk.Call returns a RTCPeerConnection object.
-      let pc = alohasdk.Call({
+      // alohasdk.Call returns an RTCPeerConnection promise.
+      alohasdk.Call({
         deviceId: form.elements.deviceId.value,
         authToken: form.elements.authToken.value,
         signalServer: form.elements.signalServer.value,
         iceServers: JSON.parse(form.elements.iceServers.value || null),
         remoteVideo: remoteVideo,
+      }).then((pc) => {
+        console.log("Peer connection configured with:", pc.getConfiguration());
       });
     };
 

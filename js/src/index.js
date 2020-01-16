@@ -1,7 +1,7 @@
 // Start a WebRTC call to a remote device. Takes an options object (see below).
 //
-// Returns an RTCPeerConnection instance, which should be close()'d when the
-// call is terminated.
+// Returns a promise that resolves to an RTCPeerConnection instance, which
+// should be close()'d when the call is terminated.
 //
 // Options:
 //   authToken: Client authentication token. (Required)
@@ -19,18 +19,117 @@ export function Call(opts) {
   if (!opts.deviceId) {
     throw "deviceId option is required";
   }
-  var log = opts.log || console.log;
+  if (!opts.log) {
+    opts.log = console.log;
+  }
+  var log = opts.log;
 
   // Initialize WebSocket connection to signaling server.
   var signalServer = opts.signalServer || 'https://api.oahu.lanikailabs.com';
   var url = signalServer.replace(/^http/, 'ws') + '/devices/' + opts.deviceId + '/call';
-  var ws = new WebSocket(url);
 
-  // Initialize RTCPeerConnection object.
-  var pc = new RTCPeerConnection({
-    iceTransportPolicy: 'all',
-    iceServers: opts.iceServers || defaultIceServers,
+  return new Promise(function(resolve, reject) {
+    var pc;
+    var ws = new WebSocket(url);
+    ws.onopen = function() {
+      log("WebSocket opened:", url);
+
+      // Authenticate by sending the client auth token. This must be the very
+      // first message on the WebSocket.
+      sendMessage(ws, 'auth-token', opts.authToken);
+
+      if (opts.iceServers) {
+        // Use client-provided ICE servers. This means we can start collecting
+        // ICE candidates right away.
+        pc = makePeerConnection(ws, opts);
+      } else {
+        // Otherwise, wait for the signal server to provide us TURN credentials.
+        // TODO: Once https://bugzilla.mozilla.org/show_bug.cgi?id=1253706 is
+        // fixed, we may be able to start ICE now and call pc.setConfiguration
+        // once we have a TURN credential.
+        sendMessage(ws, 'request-turn', '');
+      }
+    };
+
+    ws.onmessage = function(e) {
+      var msg = parseMessage(e.data);
+      log("Received WebSocket message:", msg);
+      switch (msg.what) {
+        case 'turn':
+          opts.iceServers = [
+            JSON.parse(msg.body),
+            { urls: ['stun:stun.l.google.com:19302'] },
+          ];
+          pc = makePeerConnection(ws, opts);
+          break;
+        case 'sdp-answer':
+          pc.setRemoteDescription({ type: 'answer', sdp: msg.body })
+            .then(function() {
+              log("setRemoteDescription success");
+              resolve(pc);
+            })
+            .catch(function(error) {
+              log("setRemoteDescription failure:", error);
+              reject(error);
+            });
+          break;
+        case 'ice-candidate':
+          var c = {};
+          // The body is either a JSON object (new format) or a newline-delimited
+          // set of fields (old format).
+          if (msg.body.startsWith('{')) {
+            c = JSON.parse(msg.body);
+          } else {
+            var lines = msg.body.split('\n');
+            for (var i = 0; i < lines.length; i++) {
+              var line = lines[i];
+              if (!line) {
+                continue;
+              } else if (line.startsWith('candidate:')) {
+                c.candidate = line;
+              } else if (line.startsWith('mid:')) {
+                c.sdpMid = line.slice(4);
+              } else {
+                log("Unrecognized 'ice-candidate' line:", line);
+              }
+            }
+          }
+          if (c.candidate) {
+            log("New remote ICE candidate:", c);
+          } else {
+            log("End of remote ICE candidates");
+            c = null;
+          }
+          pc.addIceCandidate(c)
+            .catch(function(error) {
+              log("addIceCandidate failure:", error);
+            });
+          break;
+      }
+    };
+
+    ws.onerror = function(e) {
+      log("WebSocket error");
+      reject(e);
+    };
+
+    ws.onclose = function(e) {
+      log("WebSocket closed:", url, e.code, e.reason);
+    };
   });
+}
+
+// Initialize an RTCPeerConnection object and send the initial SDP offer.
+function makePeerConnection(ws, opts) {
+  var log = opts.log;
+  var pc = new RTCPeerConnection({
+    iceServers: opts.iceServers,
+    iceTransportPolicy: opts.iceTransportPolicy || "all",
+  });
+
+  pc.onconnectionstatechange = function() {
+    log("New RTC connection state:", pc.connectionState);
+  };
 
   pc.onicegatheringstatechange = function() {
     log("New ICE gathering state:", pc.iceGatheringState);
@@ -63,81 +162,16 @@ export function Call(opts) {
     }
   };
 
-  ws.onopen = function() {
-    log("WebSocket opened:", url);
-
-    // Authenticate by sending the client auth token. This must be the very
-    // first message on the WebSocket.
-    sendMessage(ws, 'auth-token', opts.authToken);
-
-    // Create WebRTC offer and send it to the remote peer.
-    pc.createOffer({ offerToReceiveAudio: false, offerToReceiveVideo: true })
-      .then(function(offer) {
-        log("createOffer success:\n%s", offer.sdp);
-        pc.setLocalDescription(offer);
-        sendMessage(ws, 'sdp-offer', offer.sdp);
-      })
-      .catch(function(error) {
-        log("createOffer failure:", error);
-      });
-
-  };
-
-  ws.onmessage = function(e) {
-    var msg = parseMessage(e.data);
-    log("Received WebSocket message:", msg);
-    switch (msg.what) {
-      case 'sdp-answer':
-        pc.setRemoteDescription({ type: 'answer', sdp: msg.body })
-          .then(function() {
-            log("setRemoteDescription success");
-          })
-          .catch(function(error) {
-            log("setRemoteDescription failure:", error);
-          });
-        break;
-      case 'ice-candidate':
-        var c = {};
-        // The body is either a JSON object (new format) or a newline-delimited
-        // set of fields (old format).
-        if (msg.body.startsWith('{')) {
-          c = JSON.parse(msg.body);
-        } else {
-          var lines = msg.body.split('\n');
-          for (var i = 0; i < lines.length; i++) {
-            var line = lines[i];
-            if (!line) {
-              continue;
-            } else if (line.startsWith('candidate:')) {
-              c.candidate = line;
-            } else if (line.startsWith('mid:')) {
-              c.sdpMid = line.slice(4);
-            } else {
-              log("Unrecognized 'ice-candidate' line:", line);
-            }
-          }
-        }
-        if (c.candidate) {
-          log("New remote ICE candidate:", c);
-        } else {
-          log("End of remote ICE candidates");
-          c = null;
-        }
-        pc.addIceCandidate(c)
-          .catch(function(error) {
-            log("addIceCandidate failure:", error);
-          });
-        break;
-    }
-  };
-
-  ws.onerror = function() {
-    log("WebSocket error");
-  };
-
-  ws.onclose = function(e) {
-    log("WebSocket closed:", url, e.code, e.reason);
-  };
+  // Create WebRTC offer and send it to the remote peer.
+  pc.createOffer({ offerToReceiveAudio: false, offerToReceiveVideo: true })
+    .then(function(offer) {
+      log("createOffer success:\n%s", offer.sdp);
+      pc.setLocalDescription(offer);
+      sendMessage(ws, 'sdp-offer', offer.sdp);
+    })
+    .catch(function(error) {
+      log("createOffer failure:", error);
+    });
 
   return pc;
 }
