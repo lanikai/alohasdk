@@ -1,0 +1,14 @@
+{
+  "name": "alohasdk-auth-example",
+  "version": "1.0.0",
+  "description": "",
+  "author": "",
+  "license": "ISC",
+  "main": "newtoken.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "jsonwebtoken": "^8.5.1"
+  }
+}
