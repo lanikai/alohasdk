@@ -118,8 +118,8 @@
     form.onsubmit = function(e) {
       e.preventDefault();
 
-      // alohasdk.Call returns an RTCPeerConnection promise.
-      alohasdk.Call({
+      // alohasdk.Connect returns an RTCPeerConnection promise.
+      alohasdk.Connect({
         deviceId: form.elements.deviceId.value,
         authToken: form.elements.authToken.value,
         signalServer: form.elements.signalServer.value,

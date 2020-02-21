@@ -11,13 +11,13 @@ the browser.
 npm install --save @lanikai/alohasdk.js
 ```
 
-In your JavaScript code, import the module and invoke the `Call` function:
+In your JavaScript code, import the module and invoke the `Connect` function:
 ```javascript
 import * as alohasdk from '@lanikai/alohasdk.js';
 
 ...
 
-let pc = alohasdk.Call({
+let pc = alohasdk.Connect({
     deviceId: 'some-device-id',
     authToken: 'some-auth-token',
     remoteVideo: someVideoElement,

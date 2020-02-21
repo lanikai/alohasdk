@@ -9,7 +9,7 @@
 //   remoteVideo: <video> element for displaying remote video stream. (Required)
 //   iceServers: STUN/TURN servers to use for ICE (defaults to STUN only).
 //   log: Debug logging function (default window.console.log).
-export function Call(opts) {
+export function Connect(opts) {
   if (!opts) {
     throw "no options supplied";
   }
@@ -174,6 +174,10 @@ function makePeerConnection(ws, opts) {
     });
 
   return pc;
+}
+
+export function Call(opts) {
+  return Connect(opts);
 }
 
 // Monitor for status updates from devices. Takes an options object. The
