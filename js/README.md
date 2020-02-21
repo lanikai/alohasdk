@@ -1,7 +1,7 @@
 # alohasdk.js
 
 `alohasdk.js` is a client library for viewing AlohaRTC video streams directly in
-the browser.
+the browser. See the [Documentation](https://docs.alohartc.com) for details.
 
 
 ## Getting started

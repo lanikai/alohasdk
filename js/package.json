@@ -1,7 +1,13 @@
 {
   "name": "@lanikai/alohasdk.js",
-  "version": "0.4.0",
+  "version": "0.4.4",
   "description": "JavaScript client SDK library for the AlohaRTC platform.",
+  "homepage": "https://www.alohartc.com",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/lanikai/alohasdk.git",
+      "directory": "js"
+  },
   "author": {
     "name": "Lanikai Labs, LLC",
     "email": "aloha@lanikailabs.com",
@@ -11,7 +17,7 @@
     "Jordan Carlson <jordan@lanikailabs.com>"
   ],
   "keywords": [
-    "alohartc"
+    "alohartc", "webrtc"
   ],
   "license": "ISC",
   "main": "dist/alohasdk.js",
@@ -19,6 +25,7 @@
   "scripts": {
     "build": "webpack",
     "example": "live-server --port=8081 --entry-file=example.html",
+    "prepublish": "npm run build",
     "test": "exit 0"
   },
   "files": [
